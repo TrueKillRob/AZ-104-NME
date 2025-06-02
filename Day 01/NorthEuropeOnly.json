@@ -1,0 +1,18 @@
+{
+  "properties": {
+    "displayName": "Erzwinge Region 'northeurope' für alle Ressourcen",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "Diese Richtlinie erzwingt, dass alle Ressourcen nur in der Region 'northeurope' erstellt werden dürfen.",
+    "parameters": {},
+    "policyRule": {
+      "if": {
+        "field": "location",
+        "notEquals": "northeurope"
+      },
+      "then": {
+        "effect": "deny"
+      }
+    }
+  }
+}
