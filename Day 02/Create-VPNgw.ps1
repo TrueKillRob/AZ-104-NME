@@ -5,6 +5,14 @@ param(
     [string]$PublicIPName = "MyVPNGatewayPublicIP" # Name der öffentlichen IP-Adresse
 )
 
+# Überprüfen, ob der Benutzer bereits authentifiziert ist
+if (-not (Get-AzContext)) {
+    Write-Output "Benutzer ist nicht authentifiziert. Authentifiziere mit Device Code..."
+    Connect-AzAccount -UseDeviceAuthentication
+} else {
+    Write-Output "Benutzer ist bereits authentifiziert."
+}
+
 # Überprüfen, ob das virtuelle Netzwerk existiert
 $vnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 if (-not $vnet -or $vnet.count() -gt 1) {
@@ -29,13 +37,14 @@ if (-not $gatewaySubnet) {
 # Erstellen einer öffentlichen IP-Adresse für das VPN-Gateway
 Write-Output "Erstelle öffentliche IP-Adresse für das VPN-Gateway..."
 $publicIP = New-AzPublicIpAddress -Name $PublicIPName -ResourceGroupName $ResourceGroupName -Location $Location `
-    -AllocationMethod Dynamic -Sku Standard
+    -AllocationMethod Static -Sku Standard
 Write-Output "Öffentliche IP-Adresse erstellt: $($publicIP.IpAddress)"
 
 # Erstellen der Gateway-IP-Konfiguration
 Write-Output "Erstelle Gateway-IP-Konfiguration..."
+$id = Get-AzVirtualNetwork -Name $vnet.Name -ResourceGroupName $ResourceGroupName | Select-Object -ExpandProperty Subnets | Where-Object { $_.Name -eq "GatewaySubnet" } | Select-Object -ExpandProperty ID
 $gatewayIPConfig = New-AzVirtualNetworkGatewayIpConfig -Name "GatewayIPConfig" `
-    -SubnetId $vnet.Subnets[0].Id `
+    -SubnetId $id `
     -PublicIpAddressId $publicIP.Id
 
 # Erstellen des VPN-Gateways
