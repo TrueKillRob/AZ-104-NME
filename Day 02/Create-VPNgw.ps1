@@ -5,6 +5,8 @@ param(
     [string]$PublicIPName = "MyVPNGatewayPublicIP" # Name der öffentlichen IP-Adresse
 )
 
+$ErrorActionPreference = 'Stop'
+
 # Überprüfen, ob der Benutzer bereits authentifiziert ist
 if (-not (Get-AzContext)) {
     Write-Output "Benutzer ist nicht authentifiziert. Authentifiziere mit Device Code..."
@@ -13,13 +15,17 @@ if (-not (Get-AzContext)) {
     Write-Output "Benutzer ist bereits authentifiziert."
 }
 
-# Überprüfen, ob das virtuelle Netzwerk existiert
-$vnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
-if (-not $vnet -or $vnet.count() -gt 1) {
-    Write-Error "Das virtuelle Netzwerk '$VNetName' existiert nicht oder es gibt mehrere Netze in der Ressourcengruppe '$ResourceGroupName'."
-    exit
+# Überprüfen, ob genau ein virtuelles Netzwerk existiert
+$vnets = @(Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -ErrorAction Stop)
+if ($vnets.Count -eq 0) {
+    throw "In der Ressourcengruppe '$ResourceGroupName' wurde kein VNet gefunden."
+}
+if ($vnets.Count -gt 1) {
+    $names = $vnets.Name -join ', '
+    throw "In der Ressourcengruppe '$ResourceGroupName' wurden mehrere VNets gefunden: $names"
 }
 
+$vnet = $vnets[0]
 $VNetName = $vnet.Name
 $Location = $vnet.Location
 
