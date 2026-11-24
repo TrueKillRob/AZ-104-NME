@@ -50,5 +50,5 @@ $gatewayIPConfig = New-AzVirtualNetworkGatewayIpConfig -Name "GatewayIPConfig" `
 # Erstellen des VPN-Gateways
 Write-Output "Erstelle VPN-Gateway..."
 $vpnGateway = New-AzVirtualNetworkGateway -Name $VPNGatewayName -ResourceGroupName $ResourceGroupName -Location $Location `
-    -IpConfigurations $gatewayIPConfig -GatewayType Vpn -VpnType RouteBased -GatewaySku VpnGw1
+    -IpConfigurations $gatewayIPConfig -GatewayType Vpn -VpnType RouteBased -GatewaySku VpnGw1Az
 Write-Output "VPN-Gateway wurde erfolgreich erstellt: $VPNGatewayName"
